@@ -49,6 +49,24 @@ task runFraction(type: JavaExec) {
   classpath = sourceSets.main.runtimeClasspath
 
   main = 'Fraction'
+  
+  args '1'
+  args '2'
+}
+
+task runFrac(type: JavaExec) {
+  group 'Fraction Tasks'
+  description 'Tasks which runs Fraction with arguments'
+  
+  classpath = sourceSets.main.runtimeClasspath
+  
+  main = 'Fraction'
+  
+  if (project.hasProperty("num1") && project.hasProperty("num2")) {
+    args(project.getProperty('num1'), project.getProperty('num2'));
+  } else if (project.hasProperty("num1")){
+    args(project.getProperty('num1'), 1);
+  }
 }
 
 // Try:
