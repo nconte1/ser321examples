@@ -17,6 +17,7 @@ write a response back
 package funHttpServer;
 
 import java.io.*;
+import org.json.*;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -201,21 +202,32 @@ class WebServer {
           // extract path parameters
           query_pairs = splitQuery(request.replace("multiply?", ""));
 
-          // extract required fields from parameters
-          Integer num1 = Integer.parseInt(query_pairs.get("num1"));
-          Integer num2 = Integer.parseInt(query_pairs.get("num2"));
 
-          // do math
-          Integer result = num1 * num2;
-
-          // Generate response
-          builder.append("HTTP/1.1 200 OK\n");
-          builder.append("Content-Type: text/html; charset=utf-8\n");
-          builder.append("\n");
-          builder.append("Result is: " + result);
 
           // TODO: Include error handling here with a correct error code and
           // a response that makes sense
+          try {
+            // extract required fields from parameters
+            Integer num1 = Integer.parseInt(query_pairs.get("num1"));
+            Integer num2 = Integer.parseInt(query_pairs.get("num2"));
+
+            // do math
+            Integer result = num1 * num2;
+
+            // Generate response
+            builder.append("HTTP/1.1 200 OK\n");
+            builder.append("Content-Type: text/html; charset=utf-8\n");
+            builder.append("\n");
+            builder.append("Result is: " + result);
+          } catch (IllegalArgumentException ex) {
+            ex.printStackTrace();
+            System.out.println("<html>ERROR: " + ex.getMessage() + "</html>");
+            builder.append("HTTP/1.1 502 Bad Gateway\n");
+            builder.append("Content-Type: text/html; charset=utf-8\n");
+            builder.append("\n");
+            builder.append("Please enter two valid arguments for multiplication.");
+          }
+
 
         } else if (request.contains("github?")) {
           // pulls the query from the request and runs it with GitHub's REST API
@@ -229,16 +241,36 @@ class WebServer {
           Map<String, String> query_pairs = new LinkedHashMap<String, String>();
           query_pairs = splitQuery(request.replace("github?", ""));
           String json = fetchURL("https://api.github.com/" + query_pairs.get("query"));
-          System.out.println(json);
+          // System.out.println(json);
 
-          builder.append("Check the todos mentioned in the Java source file");
+          // builder.append("Check the todos mentioned in the Java source file");
           // TODO: Parse the JSON returned by your fetch and create an appropriate
           // response
           // and list the owner name, owner id and name of the public repo on your webpage, e.g.
           // amehlhase, 46384989 -> memoranda
           // amehlhase, 46384989 -> ser316examples
           // amehlhase, 46384989 -> test316
+//          try {
+//            }
+//          } catch ( ex) {
+//            ex.printStackTrace();
+//          }
+          try {
+            JSONArray repoArray = new JSONArray(json);
+            JSONArray newJSON = new JSONArray();
 
+            for (int i = 0; i < repoArray.length(); i++) {
+              JSONObject repo = repoArray.getJSONObject(i);
+
+              String repoName = repo.getString("name");
+              builder.append("HTTP/1.1 200 OK\n");
+              builder.append("Content-Type: text/html; charset=utf-8\n");
+              builder.append("\n");
+              builder.append("repo name: " + repoName);
+            }
+          } catch (Exception ex) {
+              ex.printStackTrace();
+          }
         } else {
           // if the request is not recognized at all
 
