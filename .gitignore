@@ -132,7 +132,7 @@ gradle-app.setting
 *.synctex.gz
 *.synctex.gz(busy)
 *.pdfsync
-
+*.idea
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
