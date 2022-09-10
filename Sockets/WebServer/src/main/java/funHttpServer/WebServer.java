@@ -203,7 +203,6 @@ class WebServer {
           query_pairs = splitQuery(request.replace("multiply?", ""));
 
 
-
           // TODO: Include error handling here with a correct error code and
           // a response that makes sense
           try {
@@ -218,7 +217,8 @@ class WebServer {
             builder.append("HTTP/1.1 200 OK\n");
             builder.append("Content-Type: text/html; charset=utf-8\n");
             builder.append("\n");
-            builder.append("Result is: " + result);
+//          builder.append("Result is: " + result);
+            builder.append(query_pairs.get("num1") + " x " + query_pairs.get("num2") + " = " + result);
           } catch (IllegalArgumentException ex) {
             ex.printStackTrace();
             System.out.println("<html>ERROR: " + ex.getMessage() + "</html>");
@@ -241,7 +241,7 @@ class WebServer {
           Map<String, String> query_pairs = new LinkedHashMap<String, String>();
           query_pairs = splitQuery(request.replace("github?", ""));
           String json = fetchURL("https://api.github.com/" + query_pairs.get("query"));
-          // System.out.println(json);
+          //  System.out.println(json);
 
           // builder.append("Check the todos mentioned in the Java source file");
           // TODO: Parse the JSON returned by your fetch and create an appropriate
@@ -250,26 +250,43 @@ class WebServer {
           // amehlhase, 46384989 -> memoranda
           // amehlhase, 46384989 -> ser316examples
           // amehlhase, 46384989 -> test316
-//          try {
-//            }
-//          } catch ( ex) {
-//            ex.printStackTrace();
-//          }
-          try {
-            JSONArray repoArray = new JSONArray(json);
-            JSONArray newJSON = new JSONArray();
 
-            for (int i = 0; i < repoArray.length(); i++) {
-              JSONObject repo = repoArray.getJSONObject(i);
+          try {
+            // create the header for the web page
+            builder.append("HTTP/1.1 200 OK\n");
+            builder.append("Content-Type: application/json; charset=utf-8\n");
+            builder.append("\n");
+            // create a JSONArray using the json file
+            JSONArray arr = new JSONArray(json);
+
+            for (int i = 0; i < arr.length(); i++) {
+              JSONObject repo = arr.getJSONObject(i);
 
               String repoName = repo.getString("name");
-              builder.append("HTTP/1.1 200 OK\n");
-              builder.append("Content-Type: text/html; charset=utf-8\n");
-              builder.append("\n");
-              builder.append("repo name: " + repoName);
+
+              // repo id is an int
+              int id = repo.getInt("id");
+
+              // login name found in owner JSONObject
+              JSONObject owner = repo.getJSONObject("owner");
+              String ownerName = owner.getString("login");
+
+              // append the values of the keys to the web page
+              builder.append("{");
+              builder.append("\"owner name\":\"").append(ownerName).append("\",");
+              builder.append("\"repo id\":\"").append(id).append("\"");
+              builder.append("\"repo name\":\"").append(repoName).append("\"");
+              builder.append("}\n");
             }
-          } catch (Exception ex) {
-              ex.printStackTrace();
+
+          } catch (JSONException ex) {
+            ex.printStackTrace();
+            System.out.println("<html>ERROR: " + ex.getMessage() + "</html>");
+            builder.append("HTTP/1.1 404 Bad Gateway\n");
+            builder.append("Content-Type: text/html; charset=utf-8\n");
+            builder.append("\n");
+            builder.append("The query entered is not valid. Please try again.");
+//
           }
         } else {
           // if the request is not recognized at all
