@@ -241,6 +241,7 @@ class WebServer {
           Map<String, String> query_pairs = new LinkedHashMap<String, String>();
           query_pairs = splitQuery(request.replace("github?", ""));
           String json = fetchURL("https://api.github.com/" + query_pairs.get("query"));
+
           //  System.out.println(json);
 
           // builder.append("Check the todos mentioned in the Java source file");
